@@ -622,6 +622,33 @@ class BaseModuleTest(unittest.TestCase):
 
         self.assertFalse(pygame.get_init())
 
+    def test_get_preferred_locales(self):
+        locales = pygame.get_preferred_locales()
+
+        # check type of return first
+        self.assertIsInstance(locales, list)
+        for lc in locales:
+            self.assertIsInstance(lc, dict)
+            lang = lc.get("language", None)
+            self.assertIsInstance(lang, str)
+
+            # length of language code should be greater than 1
+            self.assertTrue(len(lang) > 1)
+
+            try:
+                # country field is optional
+                country = lc["country"]
+                self.assertIsInstance(country, str)
+
+                # length of country code should be greater than 1
+                self.assertTrue(len(country) > 1)
+            except KeyError:
+                pass
+
+        # passing args should raise error
+        for arg in (None, 1, "hello"):
+            self.assertRaises(TypeError, pygame.get_preferred_locales, arg)
+
 
 if __name__ == "__main__":
     unittest.main()

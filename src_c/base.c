@@ -371,6 +371,72 @@ pg_get_sdl_byteorder(PyObject *self)
     return PyLong_FromLong(SDL_BYTEORDER);
 }
 
+static PyObject *
+pg_get_preferred_locales(PyObject *self)
+{
+    PyObject *ret_list = PyList_New(0);
+    if (!ret_list) {
+        return NULL;
+    }
+
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+    PyObject *dict, *string = NULL;
+    SDL_Locale *locales = SDL_GetPreferredLocales();
+    if (!locales) {
+        /* Return an empty list if SDL function does not return any useful
+         * information */
+        return ret_list;
+    }
+
+    SDL_Locale *current_locale = locales;
+    while (current_locale->language) {
+        dict = PyDict_New();
+        if (!dict) {
+            goto error;
+        }
+
+        string = PyUnicode_FromString(current_locale->language);
+        if (!string) {
+            goto error;
+        }
+        if (PyDict_SetItemString(dict, "language", string)) {
+            goto error;
+        }
+        Py_DECREF(string);
+
+        if (current_locale->country) {
+            string = PyUnicode_FromString(current_locale->country);
+            if (!string) {
+                goto error;
+            }
+            if (PyDict_SetItemString(dict, "country", string)) {
+                goto error;
+            }
+            Py_DECREF(string);
+        }
+
+        /* reset string to NULL because goto XDECREF's this */
+        string = NULL;
+        if (PyList_Append(ret_list, dict)) {
+            goto error;
+        }
+        Py_DECREF(dict);
+        current_locale++;
+    }
+
+    SDL_free(locales);
+    return ret_list;
+error:
+    Py_XDECREF(string);
+    Py_XDECREF(dict);
+    SDL_free(locales);
+    Py_DECREF(ret_list);
+    return NULL;
+#else
+    return ret_list;
+#endif
+}
+
 static void
 _pg_quit(void)
 {
@@ -2061,6 +2127,8 @@ static PyMethodDef _base_methods[] = {
      DOC_PYGAMEGETSDLVERSION},
     {"get_sdl_byteorder", (PyCFunction)pg_get_sdl_byteorder, METH_NOARGS,
      DOC_PYGAMEGETSDLBYTEORDER},
+    {"get_preferred_locales", (PyCFunction)pg_get_preferred_locales,
+     METH_NOARGS, DOC_PYGAMEGETPREFERREDLOCALES},
 
     {"get_array_interface", (PyCFunction)pg_get_array_interface, METH_O,
      "return an array struct interface as an interface dictionary"},

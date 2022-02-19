@@ -8,6 +8,7 @@
 #define DOC_PYGAMESETERROR "set_error(error_msg) -> None\nset the current error message"
 #define DOC_PYGAMEGETSDLVERSION "get_sdl_version() -> major, minor, patch\nget the version number of SDL"
 #define DOC_PYGAMEGETSDLBYTEORDER "get_sdl_byteorder() -> int\nget the byte order of SDL"
+#define DOC_PYGAMEGETPREFERREDLOCALES "get_preferred_locales() -> list[dict[str, str]]\nget preferred locales set on the system"
 #define DOC_PYGAMEREGISTERQUIT "register_quit(callable) -> None\nregister a function to be called when pygame quits"
 #define DOC_PYGAMEENCODESTRING "encode_string([obj [, encoding [, errors [, etype]]]]) -> bytes or None\nEncode a Unicode or bytes object"
 #define DOC_PYGAMEENCODEFILEPATH "encode_file_path([obj [, etype]]) -> bytes or None\nEncode a Unicode or bytes object as a file system path"
@@ -56,6 +57,10 @@ get the version number of SDL
 pygame.get_sdl_byteorder
  get_sdl_byteorder() -> int
 get the byte order of SDL
+
+pygame.get_preferred_locales
+ get_preferred_locales() -> list[dict[str, str]]
+get preferred locales set on the system
 
 pygame.register_quit
  register_quit(callable) -> None
