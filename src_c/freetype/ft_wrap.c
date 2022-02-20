@@ -68,13 +68,18 @@ _PGFT_SetError(FreeTypeInstance *ft, const char *error_msg, FT_Error error_id)
         }
     }
 
-    if (error_id && ft_msg && maxlen > error_msg_len - 42)
-        sprintf(ft->_error_msg, "%.*s: %.*s", maxlen - 3, error_msg,
-                maxlen - error_msg_len - 3, ft_msg);
-    else {
-        strncpy(ft->_error_msg, error_msg, maxlen);
-        ft->_error_msg[maxlen] = '\0'; /* in case of message truncation */
+    if (error_id && ft_msg) {
+        int ret = PyOS_snprintf(ft->_error_msg, sizeof(ft->_error_msg),
+                                "%.*s: %.*s", maxlen - 3, error_msg,
+                                maxlen - error_msg_len - 3, ft_msg);
+        if (ret >= 0 && ret < (int)sizeof(ft->_error_msg)) {
+            /* successfully copied error */
+            return;
+        }
     }
+
+    strncpy(ft->_error_msg, error_msg, maxlen);
+    ft->_error_msg[maxlen] = '\0'; /* in case of message truncation */
 }
 
 const char *

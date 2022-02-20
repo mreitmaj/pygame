@@ -655,9 +655,12 @@ _PGFT_Render_Array(FreeTypeInstance *ft, pgFontObject *fontobj,
     }
     if (_validate_view_format(view_p->format)) {
         static const char fmt[] = "Unsupported array item format '%.*s'";
-        char msg[100 + sizeof(fmt)];
 
-        sprintf(msg, fmt, (int)(sizeof(msg) - sizeof(fmt)), view_p->format);
+        /* set a default error message incase PyOS_snprintf fails */
+        char msg[100 + sizeof(fmt)] = "Unsupported array item format";
+
+        PyOS_snprintf(msg, sizeof(msg), fmt, (int)(sizeof(msg) - sizeof(fmt)),
+                      view_p->format);
         pgBuffer_Release(&pg_view);
         PyErr_SetString(PyExc_ValueError, msg);
         return -1;
