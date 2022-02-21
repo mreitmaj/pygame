@@ -30,7 +30,7 @@ v4l2_list_cameras(int *num_devices)
 {
     char **devices;
     char *device;
-    int num, i, fd;
+    int num, i, j, fd;
 
     num = *num_devices;
 
@@ -41,6 +41,7 @@ v4l2_list_cameras(int *num_devices)
 
     device = (char *)malloc(sizeof(char) * 13);
     if (!device) {
+        free(devices);
         return NULL;
     }
 
@@ -56,6 +57,12 @@ v4l2_list_cameras(int *num_devices)
     for (i = 0; i < 64; i++) {
         int ret = PyOS_snprintf(device, 13, "/dev/video%d", i);
         if (ret < 0 || ret >= 13) {
+            free(device);
+            /* free individial device already in devices array */
+            for (j = 0; j < num; j++) {
+                free(devices[j]);
+            }
+            free(devices);
             return NULL;
         }
 
@@ -68,13 +75,9 @@ v4l2_list_cameras(int *num_devices)
         close(fd);
     }
 
-    if (num == *num_devices) {
-        free(device);
-    }
-    else {
-        *num_devices = num;
-    }
-
+    /* Free device because it is always freshly allocated at this stage */
+    free(device);
+    *num_devices = num;
     return devices;
 }
 
